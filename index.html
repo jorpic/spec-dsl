@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Semantic DSL</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.48.2/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.48.2/mode/yaml/yaml.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.48.2/codemirror.min.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/3.13.1/js-yaml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.8.2/cytoscape.min.js"></script>
+
+    <style>
+      * { box-sizing: border-box; }
+
+      html, body, .content { height: 99%; }
+
+      body {
+        padding: 20px;
+        overflow-x: hidden;
+      }
+
+      .src, .dst {
+        width: 49%;
+        position: relative;
+        float: left;
+        height: 100%;
+      }
+
+      .dst { float: right; }
+
+      .src .CodeMirror {
+        background-color: #fffffb;
+        border: 1px solid #888;
+      }
+
+      .CodeMirror {
+        height: 100%;
+        font-size: 13px;
+      }
+
+      #graph {
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="content">
+      <div class="src">
+        <textarea id="yaml"></textarea>
+      </div>
+      <div class="dst">
+        <div id="graph"></div>
+        <code id="error"></code>
+      </div>
+    </div>
+
+    <script>
+      const source = CodeMirror.fromTextArea(
+        document.getElementById("yaml"),
+        { mode: "yaml",
+          lineNumbers: true
+        });
+      source.focus();
+
+      cytoscape({
+        container: document.getElementById("graph"),
+        elements: [
+          { data: { id: 'a' } },
+          { data: { id: 'b', desc: 'hello!' } },
+          {
+            data: {
+              id: 'ab',
+              desc: 'edge',
+              source: 'a',
+              target: 'b'
+            }
+          }],
+         style: [
+          { selector: 'node',
+            style: {
+              'background-color': '#666',
+              'label': 'data(desc)'
+            }
+          },
+          { selector: 'edge',
+            style: {
+              'background-color': '#666',
+              'label': 'data(desc)'
+            }
+          },
+         ]
+      });
+
+      // TODO:
+      // - onchange: convert to object, show err
+
+    </script>
+  </body>
+</html>
