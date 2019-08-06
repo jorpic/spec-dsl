@@ -53,8 +53,8 @@
         <textarea id="yaml"></textarea>
       </div>
       <div class="dst">
-        <div id="graph"></div>
         <code id="error"></code>
+        <div id="graph"></div>
       </div>
     </div>
 
@@ -66,38 +66,63 @@
         });
       source.focus();
 
+      const error = document.getElementById("error");
+
+      function parse() {
+        try {
+          const warnings = [];
+          const obj = jsyaml.safeLoad(
+            source.getValue(),
+            { onWarning: warn => warnings.push(warn.message),
+              schema: jsyaml.FAILSAFE_SCHEMA
+            }
+          );
+          error.textContent = warnings.join("\n") || JSON.stringify(obj);
+        } catch(err) {
+          console.error(err);
+          error.textContent = err.message || String(err);
+        }
+      }
+
+      let timer;
+      source.on("change", function () {
+        clearTimeout(timer);
+        timer = setTimeout(parse, 500);
+      });
+
+
       cytoscape({
         container: document.getElementById("graph"),
-        elements: [
-          { data: { id: 'a' } },
-          { data: { id: 'b', desc: 'hello!' } },
-          {
-            data: {
+        elements: {
+          nodes: [
+            { data: { id: 'a' } },
+            { data: { id: 'b', desc: 'hello!' } },
+            { data: { id: 'c' } },
+          ],
+          edges: [
+            { data: {
               id: 'ab',
               desc: 'edge',
               source: 'a',
-              target: 'b'
-            }
-          }],
-         style: [
+              target: 'a'
+            }}
+          ]
+        },
+        style: [
           { selector: 'node',
             style: {
-              'background-color': '#666',
               'label': 'data(desc)'
             }
           },
           { selector: 'edge',
             style: {
-              'background-color': '#666',
-              'label': 'data(desc)'
+              'label': 'data(desc)',
+              'curve-style': 'bezier',
+              'target-arrow-shape': 'triangle'
             }
           },
-         ]
+        ]
       });
-
-      // TODO:
-      // - onchange: convert to object, show err
-
     </script>
   </body>
 </html>
