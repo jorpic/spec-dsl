@@ -10,6 +10,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/3.13.1/js-yaml.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.8.2/cytoscape.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dexie/2.0.4/dexie.min.js"></script>
 
     <style>
       * { box-sizing: border-box; }
@@ -66,18 +67,26 @@
         });
       source.focus();
 
+      const db = new Dexie("SemanticDSL");
+      db.version(1).stores({ yaml: "id" });
+      db.open()
+        .then(() => db.yaml.get(0))
+        .then(res => res && source.setValue(res.text))
+        .catch(err => console.error(err));
+
       const error = document.getElementById("error");
 
       function parse() {
         try {
           const warnings = [];
+          const yaml = source.getValue();
           const obj = jsyaml.safeLoad(
-            source.getValue(),
+            yaml,
             { onWarning: warn => warnings.push(warn.message),
               schema: jsyaml.FAILSAFE_SCHEMA
-            }
-          );
+            });
           error.textContent = warnings.join("\n") || JSON.stringify(obj);
+          db.yaml.put({id: 0, text: yaml});
         } catch(err) {
           console.error(err);
           error.textContent = err.message || String(err);
