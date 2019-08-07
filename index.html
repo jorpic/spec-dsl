@@ -34,9 +34,6 @@
       .src .CodeMirror {
         background-color: #fffffb;
         border: 1px solid #888;
-      }
-
-      .CodeMirror {
         height: 100%;
         font-size: 13px;
       }
@@ -77,16 +74,67 @@
       const error = document.getElementById("error");
 
       function parse() {
-        try {
-          const warnings = [];
-          const yaml = source.getValue();
-          const obj = jsyaml.safeLoad(
-            yaml,
-            { onWarning: warn => warnings.push(warn.message),
-              schema: jsyaml.FAILSAFE_SCHEMA
+        const warnings = [];
+        const yaml = source.getValue();
+        const obj = jsyaml.safeLoad(
+          yaml,
+          { onWarning: warn => warnings.push(warn.message),
+            schema: jsyaml.FAILSAFE_SCHEMA
+          });
+        error.textContent = warnings.join("\n");
+        db.yaml.put({id: 0, text: yaml});
+        return obj;
+      }
+
+
+      function translate(spec) {
+        const graph = {nodes: [], edges: []};
+        for(const name in spec) {
+          const obj = spec[name];
+          if (obj.from && obj.to) { // edge
+            graph.edges.push({
+              data: {id: name, name, source: obj.from, target: obj.to}
             });
-          error.textContent = warnings.join("\n") || JSON.stringify(obj);
-          db.yaml.put({id: 0, text: yaml});
+          } else { // node
+            graph.nodes.push({data: {id: name, name}});
+          }
+        }
+
+        return graph;
+        return {
+          nodes: [
+            { data: { id: 'a' } },
+            { data: { id: 'b' } }
+          ],
+          edges: [
+          ]
+        }
+      }
+
+
+      function redraw() {
+        try {
+          const spec = parse();
+          const graph = translate(spec);
+          cytoscape({
+            container: document.getElementById("graph"),
+            elements: graph,
+            layout: { name: "circle" },
+            style: [
+              { selector: "node",
+                style: {
+                  label: "data(name)"
+                }
+              },
+              { selector: "edge",
+                style: {
+                  label: "data(name)",
+                  "curve-style": "bezier",
+                  "target-arrow-shape": "triangle"
+                }
+              },
+            ]
+          });
         } catch(err) {
           console.error(err);
           error.textContent = err.message || String(err);
@@ -96,42 +144,10 @@
       let timer;
       source.on("change", function () {
         clearTimeout(timer);
-        timer = setTimeout(parse, 500);
+        timer = setTimeout(redraw, 500);
       });
 
 
-      cytoscape({
-        container: document.getElementById("graph"),
-        elements: {
-          nodes: [
-            { data: { id: 'a' } },
-            { data: { id: 'b', desc: 'hello!' } },
-            { data: { id: 'c' } },
-          ],
-          edges: [
-            { data: {
-              id: 'ab',
-              desc: 'edge',
-              source: 'a',
-              target: 'a'
-            }}
-          ]
-        },
-        style: [
-          { selector: 'node',
-            style: {
-              'label': 'data(desc)'
-            }
-          },
-          { selector: 'edge',
-            style: {
-              'label': 'data(desc)',
-              'curve-style': 'bezier',
-              'target-arrow-shape': 'triangle'
-            }
-          },
-        ]
-      });
     </script>
   </body>
 </html>
