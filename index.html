@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Semantic DSL</title>
+    <title>Spec DSL</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.48.2/codemirror.min.js"></script>
@@ -22,14 +22,19 @@
         overflow-x: hidden;
       }
 
-      .src, .dst {
+      .left, .right {
         width: 49%;
         position: relative;
         float: left;
         height: 100%;
       }
 
-      .dst { float: right; }
+      .right {  float: right; }
+
+      .top, .bottom {
+        height: 49%;
+        width: 100%;
+      }
 
       .src .CodeMirror {
         background-color: #fffffb;
@@ -47,10 +52,10 @@
 
   <body>
     <div class="content">
-      <div class="src">
+      <div class="src top">
         <textarea id="yaml"></textarea>
       </div>
-      <div class="dst">
+      <div class="dst bottom">
         <code id="error"></code>
         <div id="graph"></div>
       </div>
