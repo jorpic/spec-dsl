@@ -104,40 +104,67 @@
       }
 
       function translate(spec) {
-        const graph = {nodes: [], edges: []};
+        const res = {options: {}, nodes: [], edges: []};
         for(const name in spec) {
           const props = spec[name];
+
+          if (name === "options") {
+            res.options = props;
+            continue;
+          }
+
           const from = prop(props, "from");
           const to = prop(props, "to");
-
           if (from && to) { // edge
-            graph.edges.push({
-              data: {id: name, name, source: from, target: to}
-            });
-          } else { // node
-            graph.nodes.push({data: {id: name, name}});
+            res.edges[name] = {props, from, to}
+            if (!res.nodes[from]) {
+              res.nodes[from] = {id: from, edges: []};
+            }
+            res.nodes[from].edges.push(name);
+            if (!res.nodes[to]) {
+              res.nodes[to] = {id: to, edges: []};
+            }
+            res.nodes[to].edges.push(name);
+          }
+          else { // node
+            if (res.nodes[name]) {
+              res.nodes[name].props = props;
+            }
+            else {
+              res.nodes[name] = {props, edges: []};
+            }
+          }
+        }
+        return res;
+      }
+
+      function render(graph) {
+        const nodes = [];
+        const edges = [];
+
+        for(const id in graph.nodes) {
+          const node = graph.nodes[id];
+          if (graph.options["show orphans"] === "yes" || node.edges.length > 0) {
+            nodes.push({data: {id, name: id}});
           }
         }
 
-        return graph;
-        return {
-          nodes: [
-            { data: { id: 'a' } },
-            { data: { id: 'b' } }
-          ],
-          edges: [
-          ]
+        for (const id in graph.edges) {
+          const edge = graph.edges[id];
+          edges.push({
+            data: {id, name: id, source: edge.from, target: edge.to}
+          });
         }
+
+        return {nodes, edges};
       }
 
 
       function redraw() {
         try {
-          const spec = parse();
-          const graph = translate(spec);
           cytoscape({
             container: document.getElementById("graph"),
-            elements: graph,
+            elements: render(translate(parse())),
             layout: { name: "circle" },
             style: [
               { selector: "node",
