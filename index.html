@@ -64,8 +64,15 @@
     <script>
       const source = CodeMirror.fromTextArea(
         document.getElementById("yaml"),
+
         { mode: "yaml",
-          lineNumbers: true
+          lineNumbers: true,
+          extraKeys: {
+            Tab: function(cm) {
+              const spaces = Array(cm.getOption("indentUnit") + 1).join(" ");
+              cm.replaceSelection(spaces, "end", "+input");
+            }
+          }
         });
       source.focus();
 
