@@ -91,14 +91,21 @@
         return obj;
       }
 
+      function prop(list, name) {
+        const p = list && list.find(p => p && p[name]);
+        return p && p[name];
+      }
 
       function translate(spec) {
         const graph = {nodes: [], edges: []};
         for(const name in spec) {
-          const obj = spec[name];
-          if (obj.from && obj.to) { // edge
+          const props = spec[name];
+          const from = prop(props, "from");
+          const to = prop(props, "to");
+
+          if (from && to) { // edge
             graph.edges.push({
-              data: {id: name, name, source: obj.from, target: obj.to}
+              data: {id: name, name, source: from, target: to}
             });
           } else { // node
             graph.nodes.push({data: {id: name, name}});
