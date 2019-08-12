@@ -13,27 +13,16 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dexie/2.0.4/dexie.min.js"></script>
 
     <style>
-      * { box-sizing: border-box; }
-
       html, body, .content { height: 99%; }
+      body { overflow-x: hidden; }
 
-      body {
-        padding: 20px;
-        overflow-x: hidden;
+      .content {
+        display: flex;
+        flex-direction: column;
       }
 
-      .left, .right {
-        width: 49%;
-        position: relative;
-        float: left;
-        height: 100%;
-      }
-
-      .right {  float: right; }
-
-      .top, .bottom {
-        height: 49%;
-        width: 100%;
+      .col {
+        flex: 1;
       }
 
       .src .CodeMirror {
@@ -52,10 +41,10 @@
 
   <body>
     <div class="content">
-      <div class="src top">
+      <div class="src col">
         <textarea id="yaml"></textarea>
       </div>
-      <div class="dst bottom">
+      <div class="dst col">
         <code id="error"></code>
         <div id="graph"></div>
       </div>
